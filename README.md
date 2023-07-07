@@ -15,5 +15,18 @@ pip install smplkit
 
 ```bash
 git clone git@github.com:Silverster98/smpl-kit.git
+cd smpl-kit
 pip install . --use-feature=in-tree-build
 ```
+
+## Documentation
+
+### Tutorial
+
+### API Reference
+
+## License
+
+This project is licensed under the terms of the [MIT](LICENSE) license.
+
+## Acknowledgement
