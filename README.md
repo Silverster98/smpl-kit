@@ -1,23 +1,26 @@
 # smpl-kit
-Use SMPL more easily!
+> Use SMPL more easily! This project aims to provide a simple and easy-to-use interface for SMPL-related human body models, e.g., SMPL, MANO, and SMPL-X. It also provides useful tools, e.g., SMPL parameter transformation, SMPL body mesh visualization, etc.
 
 ## Installation
 
-To install the `smplkit` package, you can either install it from PyPI or install it from source.
+1. Before installing `smplkit`, please make sure that you have installed [pytorch](https://pytorch.org/).
 
-- To install from PyPI by using `pip`:
 
-```bash
-pip install smplkit
-```
+2. To install the `smplkit` package, you can either install it from PyPI or install it from source.
 
-- Or, clone this repository and install it from source:
+   - To install from PyPI by using `pip`:
 
-```bash
-git clone git@github.com:Silverster98/smpl-kit.git
-cd smpl-kit
-pip install .
-```
+   ```bash
+   pip install smplkit
+   ```
+
+   - Or, clone this repository and install it from source:
+
+   ```bash
+   git clone git@github.com:Silverster98/smpl-kit.git
+   cd smpl-kit
+   pip install .
+   ```
 
 ## Documentation
 

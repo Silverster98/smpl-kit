@@ -21,7 +21,9 @@ REQUIRES_PYTHON = '>=3.6.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    # 'requests', 'maya', 'records',
+    'numpy>=1.19.0',
+    'einops>=0.3.0',
+    'torch>=1.6.0',
 ]
 
 # The rest you shouldn't have to touch too much :)
