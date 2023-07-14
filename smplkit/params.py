@@ -71,9 +71,6 @@ class SMPLParam(Parameter):
             betas = betas.to(**torch_kwargs)
         else:
             betas = torch.tensor(betas, **torch_kwargs)
-        ## expand the betas if the batch size of betas is 1
-        if betas.shape[0] != batch_size and betas.shape[0] == 1:
-            betas = betas.expand(batch_size, -1)
         
         if body_pose is None:
             body_pose = torch.zeros(batch_size, self.NUM_JOINTS*3, **torch_kwargs)
