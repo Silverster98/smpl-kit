@@ -95,6 +95,15 @@ def rot_mat_to_euler(rot_mats):
                     rot_mats[:, 1, 0] * rot_mats[:, 1, 0])
     return torch.atan2(-rot_mats[:, 2, 0], sy)
 
+def find_joint_kin_chain(joint_id, kinematic_tree):
+    """ Find the kinematic chain of a given joint"""
+    kin_chain = []
+    curr_idx = joint_id
+    while curr_idx != -1:
+        kin_chain.append(curr_idx)
+        curr_idx = kinematic_tree[curr_idx]
+    return kin_chain
+
 class Struct(object):
     """ Body model parameter structure
     """
@@ -123,4 +132,20 @@ class ModelOutput(object):
 class SMPLOutput(ModelOutput):
     """ SMPL body model output structure
     """
-    
+    body_pose: Optional[Tensor] = None
+
+@dataclass
+class SMPLHOutput(SMPLOutput):
+    """ SMPLH body model output structure
+    """
+    left_hand_pose: Optional[Tensor] = None
+    right_hand_pose: Optional[Tensor] = None
+
+@dataclass
+class SMPLXOutput(SMPLHOutput):
+    """ SMPLX body model output structure
+    """
+    jaw_pose: Optional[Tensor] = None
+    leye_pose: Optional[Tensor] = None
+    reye_pose: Optional[Tensor] = None
+    landmarks: Optional[Tensor] = None

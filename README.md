@@ -1,5 +1,5 @@
 # smpl-kit
-> Use SMPL more easily! This project aims to provide a simple and easy-to-use interface for SMPL-related human body models, e.g., SMPL, MANO, and SMPL-X. It also provides useful tools, e.g., SMPL parameter transformation, SMPL body mesh visualization, etc.
+> Use SMPL more easily! This project aims to provide a simple and easy-to-use interface for SMPL-related human body models, e.g., SMPL and SMPL-X. It also provides useful tools, e.g., SMPL parameter transformation, SMPL body mesh visualization, etc.
 
 ## Installation
 
@@ -23,6 +23,13 @@
    ```
 
 ## Documentation
+
+### Features
+
+- [x] SMPL/SMPL+H/SMPL-X body models
+- [x] Variable batch size
+- [x] Numerous utility functions
+- [x] Visualization tools
 
 ### Tutorial
 
