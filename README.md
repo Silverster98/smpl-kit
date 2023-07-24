@@ -1,5 +1,10 @@
 # smpl-kit
-> Use SMPL more easily! This project aims to provide a simple and easy-to-use interface for SMPL-related human body models, e.g., SMPL and SMPL-X. It also provides useful tools, e.g., SMPL parameter transformation, SMPL body mesh visualization, etc.
+
+> Simplify SMPL usage with `smplkit`! It automatically searches model paths, enables body mesh generation with variable batch sizes, processes SMPL parameters and meshes using numerous utility functions, and provides easy visualization tools for the results.
+
+<div align=center>
+<img src="./assets/smplkit-smplx.png" width="95%">
+</div>
 
 ## Installation
 
@@ -26,12 +31,53 @@
 
 ### Features
 
+- [x] Searching model automatically
 - [x] SMPL/SMPL+H/SMPL-X body models
 - [x] Variable batch size
 - [x] Numerous utility functions
 - [x] Visualization tools
 
 ### Tutorial
+
+#### 0. Model path configuration
+
+`smplkit` can search the model automatically. However, you can also specify the model path manually.
+
+- If the `model_path` is not provided as a parameter for SMPL/SMPL+H/SMPL-X layers, the program will automatically search the models in current folder.
+  - If `./body_models/` exists, the program will search the models in `./body_models/`.
+    - You should organize the `./body_models/` as follows:
+        ```bash
+        |- ./body_models/
+        |--- smpl/  # SMPL model
+        |----- SMPL_NEUTRAL.pkl
+        |--- smplh/ # SMPL+H model
+        |----- SMPLH_NEUTRAL.pkl
+        |----- SMPLH_MALE.pkl
+        |----- SMPLH_FEMALE.pkl
+        |--- smplx/ # SMPL-X model
+        |----- SMPLX_NEUTRAL.npz
+        |----- SMPLX_MALE.npz
+        |----- SMPLX_FEMALE.npz
+        ```
+  - If `./body_models` does not exist, the program will search the models in `~/.body_models/`, i.e., the home folder.
+    - You should organize the `~/.body_models/` as follows (similar to the above):
+        ```bash
+        |- ~/.body_models/
+        |--- smpl/  # SMPL model
+        |--- smplh/ # SMPL+H model
+        |--- smplx/ # SMPL-X model
+        ```
+  - So, you can either put the models in one workspace for one project or in the home folder for all related projects.
+- If the `model_path` is provided as a parameter for SMPL/SMPL+H/SMPL-X layers, the program will search the models in the given path.
+  - If the `model_path` is file path, the program will load the model from the given file path.
+  - If the `model_path` if folder path, the program will search the models in the given folder path.
+    - You should organize the given folder as follows (similar to the above):
+        ```bash
+        |- ${GIVEN_FOLDER}/
+        |--- smpl/  # SMPL model
+        |--- smplh/ # SMPL+H model
+        |--- smplx/ # SMPL-X model
+        ```
 
 #### 1. Use the `SMPLLayer` to generate a SMPL body mesh with random translation while keeping other parameters as zero:
 
@@ -40,15 +86,11 @@ import torch
 import trimesh
 from smplkit import SMPLLayer as SMPL
 
-NJOINTS = 23
+body_model = SMPL()
 
-body_model = SMPL(num_betas=10)
-
-transl = torch.rand((1, 3), dtype=torch.float32)
-
+transl = torch.rand((2, 3), dtype=torch.float32)
 verts = body_model(transl=transl, return_verts=True)
-faces = body_model.faces
-verts = verts.cpu().numpy()
+verts = verts.numpy()
 
 mesh = trimesh.Trimesh(vertices=verts[0], faces=body_model.faces)
 ```
