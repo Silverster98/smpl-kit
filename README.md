@@ -1,9 +1,10 @@
 # smpl-kit
 
-> `smplkit` is a versatile library that simplifies SMPL body model usage with automatic model path search, support different body models, adjustable batch size, and useful utility functions for data processing and visualization.
+> `smplkit` is a versatile library that simplifies SMPL body model usage with automatic model path search, different body models support, adjustable batch size support, and useful utility functions for data processing and visualization.
 
 <div align=center>
-<img src="./assets/smplkit-smplx.png" width="95%">
+<img src="./assets/smplkit-smplx.png" width="100%">
+<i>The left figure utilizes smplx for creating an SMPL body mesh with random translation, while smplkit achieves the same functionality with a more concise code implementation.</i>
 </div>
 
 ## Features
