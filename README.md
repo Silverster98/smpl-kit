@@ -1,10 +1,18 @@
 # smpl-kit
 
-> Simplify SMPL usage with `smplkit`! It automatically searches model paths, enables body mesh generation with variable batch sizes, processes SMPL parameters and meshes using numerous utility functions, and provides easy visualization tools for the results.
+> `smplkit` is a versatile library that simplifies SMPL body model usage with automatic model path search, support different body models, adjustable batch size, and useful utility functions for data processing and visualization.
 
 <div align=center>
 <img src="./assets/smplkit-smplx.png" width="95%">
 </div>
+
+## Features
+
+- [x] Automatic model path search in the workspace or home folder.
+- [x] Support SMPL, SMPL+H, SMPL-X body models.
+- [x] Support adjustable batch size of the SMPL parameters.
+- [x] Provide numerous utility functions for SMPL parameters and meshes.
+- [x] Provide visualization tools for viewing the results.
 
 ## Installation
 
@@ -28,14 +36,6 @@
    ```
 
 ## Documentation
-
-### Features
-
-- [x] Searching model automatically
-- [x] SMPL/SMPL+H/SMPL-X body models
-- [x] Variable batch size
-- [x] Numerous utility functions
-- [x] Visualization tools
 
 ### Tutorial
 
@@ -124,6 +124,11 @@ for i in range(200):
     if (i + 1) % 20 == 0:
         print(f"Optimization Error in Step {i + 1:3d}: {loss.item()}")
 ```
+
+## TODOs
+
+- [ ] Utility functions
+- [ ] Visualization tools
 
 ## License
 
