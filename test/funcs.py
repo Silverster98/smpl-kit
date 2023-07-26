@@ -763,3 +763,55 @@ def test4(visualize=False):
         S.add_geometry(mesh)
 
         S.show()
+
+def test5():
+    """ Test utils """
+    import smplkit as sk
+    import numpy as np
+    from pyquaternion import Quaternion as Q
+    from smplkit import SMPLLayer as SMPL
+
+    T = Q(axis=[0, 1, 0], angle=np.pi / 2).transformation_matrix.astype(np.float32)
+    T[0:3, -1] = np.random.rand(3)
+    T = torch.from_numpy(T)
+
+    body_model = SMPL(num_betas=10)
+
+    transl = torch.rand((2, 3), dtype=torch.float32) * 0.0
+    orient = torch.rand((2, 3), dtype=torch.float32) * 0.1
+    betas = torch.rand((2, 10), dtype=torch.float32) * 0.0
+    body_pose = torch.rand((2, 23 * 3), dtype=torch.float32) * 0.0
+    output = body_model(betas=betas, transl=transl, orient=orient, body_pose=body_pose)
+    joints = output.joints
+    verts = output.vertices
+
+
+    joints_trans = torch.matmul(joints, T[0:3, 0:3].T) + T[0:3, -1] ## transform joints
+    verts_trans = torch.matmul(verts, T[0:3, 0:3].T) + T[0:3, -1]   ## transform vertices
+
+    # S = trimesh.Scene()
+    # S.add_geometry(trimesh.creation.axis())
+    # S.add_geometry(trimesh.Trimesh(vertices=verts[0].numpy(), faces=body_model.faces))
+    # S.show()
+    # S = trimesh.Scene()
+    # S.add_geometry(trimesh.creation.axis())
+    # S.add_geometry(trimesh.Trimesh(vertices=verts_trans[0].numpy(), faces=body_model.faces))
+    # S.show()
+    
+    new_transl, new_orient = sk.utils.matrix_to_parameter(T, transl, orient, joints[:, 0, :])
+
+    new_output = body_model(betas=betas, transl=new_transl, orient=new_orient, body_pose=body_pose)
+    new_joints = new_output.joints
+    new_verts = new_output.vertices
+
+    # S = trimesh.Scene()
+    # S.add_geometry(trimesh.creation.axis())
+    # S.add_geometry(trimesh.Trimesh(vertices=new_verts[0].numpy(), faces=body_model.faces))
+    # S.show()
+
+    assert torch.abs(joints_trans - new_joints).mean() < EPS, \
+        f"joints_trans != new_joints, but {torch.abs(joints_trans - new_joints).mean()}"
+    assert torch.abs(verts_trans - new_verts).mean() < EPS, \
+        f"vert_trans != new_vertsm but {torch.abs(verts_trans - new_verts).mean()}"
+    
+    print('[T5] Pass!\n')

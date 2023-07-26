@@ -16,3 +16,5 @@ if __name__ == '__main__':
     test3_3()
     
     test4()
+
+    test5()

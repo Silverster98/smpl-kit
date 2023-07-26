@@ -17,7 +17,7 @@
 
 ## Installation
 
-1. Before installing `smplkit`, please make sure that you have installed [pytorch](https://pytorch.org/).
+1. Before installing `smplkit`, please make sure that you have installed [pytorch](https://pytorch.org/) and [pytorch3d](https://pytorch3d.org/).
 
 
 2. To install the `smplkit` package, you can either install it from PyPI or install it from source.
@@ -125,6 +125,36 @@ for i in range(200):
     if (i + 1) % 20 == 0:
         print(f"Optimization Error in Step {i + 1:3d}: {loss.item()}")
 ```
+
+### API
+
+- SMPLLayer
+- SMPLHLayer
+- SMPLXLayer
+- SMPLParam
+- SMPLHParam
+- SMPLXParam
+- utils
+  - matrix_to_parameter
+  - compute_orient
+  - compute_normal
+  - compute_sdf
+  - VertexSelector
+    - select_vertex
+    - contact_vertex
+    - key_vertex
+  - BodyModel
+    - reset_body_model
+    - forward
+    - to
+- visualize
+- constants
+  - VERTEX_NUM
+  - KEY_VERTEX_IDS
+  - CONTACT_PART_NAME
+  - CONTACT_VERTEX_IDS
+  - JOINTS_NAME
+  - SKELETON_TREE
 
 ## TODOs
 

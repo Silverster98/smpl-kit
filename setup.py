@@ -24,6 +24,8 @@ REQUIRED = [
     'numpy>=1.19.0',
     'einops>=0.3.0',
     'torch>=1.6.0',
+    'pytorch3d>=0.6.0',
+    'easydict>=1.9',
 ]
 
 # The rest you shouldn't have to touch too much :)
