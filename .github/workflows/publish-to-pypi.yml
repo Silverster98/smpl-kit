@@ -19,9 +19,6 @@ jobs:
         with:
           python-version: "3.x"
       
-      - name: Write version to python file
-        run: echo "__version__ = '$(echo ${{ github.ref }} | sed -e 's/refs\/tags\/v//g')'" > smplkit/__version__.py && cat smplkit/__version__.py
-      
       - name: Install pypa/build
         run: python3 -m pip install build --user
 

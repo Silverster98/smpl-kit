@@ -4,7 +4,7 @@ from typing import Any, Union, Tuple, List, Dict, Optional
 from pytorch3d.transforms import axis_angle_to_matrix, matrix_to_axis_angle
 
 from .misc import ModelOutput
-from .constants import VERTEX_NUM, CONTACT_VERTEX_IDS, CONTACT_PART_NAME, KEY_VERTEX_IDS
+from .constants import *
 
 ## Some useful functions
 def matrix_to_parameter(
@@ -14,6 +14,8 @@ def matrix_to_parameter(
         pelvis: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
     """ Convert vertice transformation matrix to smpl trans and orient parameter. The given T should be column matrices.
+
+    As we use matrix_to_axis_angle in pytorch3d to convert the representations, the rotation angle of output orient may not be in [0, pi] strictly.
 
     Reference: https://www.dropbox.com/scl/fi/zkatuv5shs8d4tlwr8ecc/Change-parameters-to-new-coordinate-system.paper?dl=0&rlkey=lotq1sh6wzkmyttisc05h0in0
 
@@ -39,48 +41,58 @@ def matrix_to_parameter(
     return trans + t, orient
 
 def compute_orient(
-    body: Union[torch.Tensor, np.ndarray, ModelOutput],
+    body: Union[torch.Tensor, ModelOutput],
 ):
     """ Compute the body orientation with given body joints
     """
-    pass
+    raise NotImplementedError
 
 def compute_normal(
-    body: Union[torch.Tensor, np.ndarray, ModelOutput],
-    faces: Optional[Union[torch.Tensor, np.ndarray]]=None,
+    body: Union[torch.Tensor, ModelOutput],
+    faces: Optional[torch.Tensor]=None,
 ):
     """ Compute the body normal with given body vertices and faces
     """
-    pass
+    raise NotImplementedError
 
 def compute_sdf(
-    
+    points: torch.Tensor,
+    body: Union[torch.Tensor, ModelOutput],
+    faces: Optional[torch.Tensor]=None,
 ):
     """ Signed Distance Function
     """
-    pass
-
+    raise NotImplementedError
 
 ## Some useful classes
 class VertexSelector():
 
     @staticmethod
-    def select_vertex(verts: Union[torch.Tensor, np.ndarray], index: Union[List, Dict, Tuple]):
+    def select_vertex(
+        body: Union[torch.Tensor, np.ndarray, ModelOutput],
+        index: Union[List, Dict],
+    ):
         """ Select specific vertices with a given index
 
         Args:
-            verts: the vertices tensor or array, shape is <..., N, 3>, where N is the number of vertices
-            index: the index of vertices to be selected, can be a list, dict or tuple
-        
+            body: the output of a body model, can be a tensor or array or ModelOutput. \
+                If it is tensor or array, the shape is <..., N, 3>, where N is the number of vertices
+            index: the index of vertices to be selected, can be a list or dict. \
+                If it is a list, each element is a index of vertices to be selected. \
+                If it is a dict, the key is the vertex name and the value is the index of vertices to be selected.
+                
         Return:
             The selected vertices tensor or array.
         """
+        if isinstance(body, ModelOutput):
+            verts = body.vertices
+        else:
+            verts = body
+        
         if isinstance(index, list):
             index = index
         elif isinstance(index, dict):
-            index =  index.values()
-        elif isinstance(index, tuple):
-            index = [t[1] for t in index]
+            index = list(index.values())
         else:
             raise Exception('[Type Error] Index type not supported! Please use list, dict or tuple.')
         
@@ -89,13 +101,15 @@ class VertexSelector():
     @staticmethod
     def contact_vertex(
         body: Union[torch.Tensor, np.ndarray, ModelOutput],
-        index: Optional[Union[List, Dict, Tuple]]=None,
+        parts: Optional[List]=None,
     ):
         """ Select contact vertices from a given body
 
         Args:
-            body: the output a body model, can be a tensor or array or ModelOutput. If it is tensor or array, the shape is <..., N, 3>, where N is the number of vertices
-            index: the index of contact vertices, default is None, which means all contact vertices will be selected with default CONTACT_VERTEX_IDS
+            body: the output of a body model, can be a tensor or array or ModelOutput. \
+                If it is tensor or array, the shape is <..., N, 3>, where N is the number of vertices
+            parts: the used parts for selecting contact vertices, default is None, which means all contact, \
+                i.e., ['back', 'gluteus', 'L_Hand', 'L_Leg', 'R_Hand', 'R_Leg', 'thighs'], will be used.
         
         Return:
             The selected contact vertices tensor or array.
@@ -105,17 +119,16 @@ class VertexSelector():
         else:
             verts = body
         
-        nverts = verts.shape[-2]
-        if nverts == VERTEX_NUM.SMPL: # SMPL and SMPL+H have same body vertex number
-            if index is None:
-                index = []
-                for part in CONTACT_PART_NAME:
-                    index += CONTACT_VERTEX_IDS.SMPL[part]['verts_ind']
-        elif nverts == VERTEX_NUM.SMPLX:
-            if index is None:
-                index = []
-                for part in CONTACT_PART_NAME:
-                    index += CONTACT_VERTEX_IDS.SMPLX[part]['verts_ind']
+        parts = CONTACT_PART_NAME if parts is None else parts
+
+        index = []
+        if verts.shape[-2] == VERTEX_NUM.SMPL: # SMPL and SMPL+H have same body vertex number
+            raise NotImplementedError
+            for part in parts:
+                index += CONTACT_VERTEX_IDS.SMPL[part]['verts_ind']
+        elif verts.shape[-2] == VERTEX_NUM.SMPLX:
+            for part in parts:
+                index += CONTACT_VERTEX_IDS.SMPLX[part]['verts_ind']
         else:
             raise Exception('[Length Error] The number of vertex is not supported! Please input an array with 6890 vertices for SMPL(+H) or 10475 for SMPL-X.')
         
@@ -132,7 +145,8 @@ class VertexSelector():
         In our implementation, we provide this utility function to select key vertices from a given body, which is more flexible.
 
         Args:
-            body: the output a body model, can be a tensor or array or ModelOutput. If it is tensor or array, the shape is <..., N, 3>, where N is the number of vertices
+            body: the output a body model, can be a tensor or array or ModelOutput. \
+                If it is tensor or array, the shape is <..., N, 3>, where N is the number of vertices
             index: the index of key vertices, default is None, which means all key vertices will be selected with default KEY_VERTICES_INDEX
         
         Return:
@@ -155,6 +169,53 @@ class VertexSelector():
 
         return VertexSelector.select_vertex(verts, index)
 
+class JointSelector():
+
+    @staticmethod
+    def select_joint(
+        body: Union[torch.Tensor, np.ndarray, ModelOutput],
+        index: Union[List, Dict]
+    ):
+        """ Select specific joints with a given index
+
+        Args:
+            body: the output of a body model, can be a tensor or array or ModelOutput. \
+                If it is a tensor or array, the shape is <..., J, 3>, where J is the number of joints
+            index: the index of vertices to be selected, can be a list or dict. \
+                If it is a list, each element is a index of vertices to be selected. \
+                If it is a dict, the key is the vertex name and the value is the index of vertices to be selected.
+        
+        Return:
+            The selected joints tensor or array.
+        """
+        if isinstance(body, ModelOutput):
+            joints = body.joints
+        else:
+            joints = body
+        
+        if joints.shape[-2] == JOINTS_NUM.SMPL + 1:
+            joints_name = JOINTS_NAME.SMPL
+        elif joints.shape[-2] == JOINTS_NUM.SMPLH + 1:
+            joints_name = JOINTS_NAME.SMPLH
+        elif joints.shape[-2] == JOINTS_NUM.SMPLX + 1:
+            joints_name = JOINTS_NAME.SMPLX
+        else:
+            raise Exception('[Length Error] The number of joints is not supported! Please input an array with 23+1 joints for SMPL, 51+1 for SMPL+H or 54+1 for SMPL-X.')
+        
+        if isinstance(index, list):
+            if isinstance(index[0], str):
+                index = [joints_name.index(n) for n in index]
+            elif isinstance(index[0], int):
+                index = index
+            else:
+                raise Exception('[Type Error] Item type in index not supported! Please use str or int.')
+        elif isinstance(index, dict):
+            index =  list(index.values())
+        else:
+            raise Exception('[Type Error] Index type not supported! Please use list, dict or tuple.')
+        
+        return joints[..., index, :]
+
 def _singleton(cls):
     _instance = {}
 
@@ -170,9 +231,6 @@ class BodyModel():
         """ Create a singleton body model. """
         self.reset(model_type, *args, **kwargs)
     
-    def __call__(self, *args, **kwargs) -> Any:
-        pass
-    
     def reset(self, model_type: Optional[str]=None, *args, **kwargs):
         """ Reset the body model. """
         if model_type is None or model_type == '':
@@ -183,7 +241,7 @@ class BodyModel():
             from .layers import SMPLLayer as SMPL
             self.model = SMPL(*args, **kwargs)
         elif model_type.lower() == 'smplh':
-            from .layers import SMPLLayer as SMPLH
+            from .layers import SMPLHLayer as SMPLH
             self.model = SMPLH(*args, **kwargs)
         elif model_type.lower() == 'smplx':
             from .layers import SMPLXLayer as SMPLX
@@ -191,8 +249,10 @@ class BodyModel():
         else:
             raise Exception('[Value Error] Body model type not supported! Please use smpl, smplh or smplx.')
     
-    def forward(self, *args, **kwargs):
+    def run(self, *args, **kwargs):
+        """ Run the body model to output body meshes. """
         return self.model(*args, **kwargs)
     
     def to(self, **kwargs):
+        """ Move the body model to a specific device or dtype. """
         return self.model.to(**kwargs)

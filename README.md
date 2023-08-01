@@ -128,38 +128,38 @@ for i in range(200):
 
 ### API
 
-- SMPLLayer
-- SMPLHLayer
-- SMPLXLayer
-- SMPLParam
-- SMPLHParam
-- SMPLXParam
-- utils
-  - matrix_to_parameter
-  - compute_orient
-  - compute_normal
-  - compute_sdf
-  - VertexSelector
+- [x] SMPLLayer
+- [x] SMPLHLayer
+- [x] SMPLXLayer
+- [x] SMPLParam
+- [x] SMPLHParam
+- [x] SMPLXParam
+- [x] utils
+  - [x] matrix_to_parameter
+  - [ ] compute_orient
+  - [ ] compute_normal
+  - [ ] compute_sdf
+  - [x] VertexSelector
     - select_vertex
-    - contact_vertex
+    - contact_vertex (Only support SMPL-X now)
     - key_vertex
-  - BodyModel
-    - reset_body_model
-    - forward
+  - [x] JointSelector
+    - select_joint
+  - [x] BodyModel
+    - reset
+    - run
     - to
-- visualize
-- constants
-  - VERTEX_NUM
-  - KEY_VERTEX_IDS
-  - CONTACT_PART_NAME
-  - CONTACT_VERTEX_IDS
-  - JOINTS_NAME
-  - SKELETON_TREE
-
-## TODOs
-
-- [ ] Utility functions
-- [ ] Visualization tools
+- [ ] visualize
+- [x] constants
+  - [x] VERTEX_NUM
+  - [x] JOINTS_NUM
+  - [x] KEY_VERTEX_IDS
+  - [x] CONTACT_PART_NAME
+  - [x] CONTACT_VERTEX_IDS (Only support SMPL-X now)
+  - [x] JOINTS_NAME
+  - [x] SMPLX_LANDMARKS_NAME
+  - [x] SKELETON_CHAIN
+  - [x] SKELETON_PARENTS
 
 ## License
 

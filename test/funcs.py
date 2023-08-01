@@ -764,7 +764,7 @@ def test4(visualize=False):
 
         S.show()
 
-def test5():
+def test5_1():
     """ Test utils """
     import smplkit as sk
     import numpy as np
@@ -814,4 +814,111 @@ def test5():
     assert torch.abs(verts_trans - new_verts).mean() < EPS, \
         f"vert_trans != new_vertsm but {torch.abs(verts_trans - new_verts).mean()}"
     
-    print('[T5] Pass!\n')
+    print('[T5-1] Pass!\n')
+
+def test5_5():
+    """ Test utils """
+    from smplkit import SMPLXLayer as SMPLX
+    import smplkit as sk
+    import numpy as np
+    import trimesh
+    
+    bm = SMPLX()
+
+    ## key verts
+    out = bm(torch.rand(2, 3, dtype=torch.float32))
+    key_verts = sk.utils.VertexSelector.key_vertex(out)
+    assert key_verts.shape == (2, 21, 3), f"key_verts.shape != (2, 21, 3), but {key_verts.shape}"
+
+    verts = out.vertices.numpy()
+    faces = bm.faces
+
+    color = np.ones((key_verts.shape[0], 4), dtype=np.uint8)
+    color[:, :] = [255, 0, 0, 255]
+    S = trimesh.PointCloud(vertices=key_verts[0], colors=color)
+    S.show()
+
+    ## contact verts
+    verts = bm(return_verts=True)
+    verts = verts.numpy()[0]
+    faces = bm.faces
+
+    gluteus_ind = sk.constants.CONTACT_VERTEX_IDS.SMPLX.gluteus.verts_ind
+    gluteus_verts = verts[gluteus_ind]
+    gluteus_verts_gt = sk.utils.VertexSelector.contact_vertex(verts, ['gluteus'])
+    assert np.abs(gluteus_verts - gluteus_verts_gt).sum() < EPS, \
+        f"gluteus_verts != gluteus_verts_gt, but {np.abs(gluteus_verts - gluteus_verts_gt).sum()}"
+
+    color = np.ones((verts.shape[0], 4), dtype=np.uint8)
+    color[:, :] = [128, 128, 128, 255]
+    color[gluteus_ind, :] = [255, 0, 0, 255]
+    S = trimesh.Trimesh(vertices=verts, faces=faces, vertex_colors=color)
+    S.show()
+
+    ## all contact parts
+    verts = bm(return_verts=True)
+    verts = verts.numpy()[0]
+    faces = bm.faces
+
+    part_ind = []
+    for part in sk.constants.CONTACT_PART_NAME:
+        part_ind += sk.constants.CONTACT_VERTEX_IDS.SMPLX[part].verts_ind
+    part_verts_gt = sk.utils.VertexSelector.contact_vertex(verts)
+    part_verts = verts[part_ind]
+    assert np.abs(part_verts - part_verts_gt).sum() < EPS, \
+        f"part_verts != part_verts_gt, but {np.abs(part_verts - part_verts_gt).sum()}"
+    
+    color = np.ones((verts.shape[0], 4), dtype=np.uint8)
+    color[:, :] = [128, 128, 128, 255]
+    color[part_ind, :] = [255, 0, 0, 255]
+    S = trimesh.Trimesh(vertices=verts, faces=faces, vertex_colors=color)
+    S.show()
+
+    print('[T5-5] Pass!\n')
+
+def test5_6():
+    """ Test utils """
+    from smplkit import SMPLXLayer as SMPLX
+    import smplkit as sk
+    import torch
+
+    bm = SMPLX()
+    joints = bm(torch.rand(2, 3, dtype=torch.float32), return_joints=True)
+    pelvis = sk.utils.JointSelector.select_joint(joints, [0])
+    pelvis_gt = sk.utils.JointSelector.select_joint(joints, ['pelvis'])
+    assert pelvis.shape == pelvis_gt.shape == (2, 1, 3), \
+        f"pelvis.shape != pelvis_gt.shape != (2, 1, 3), but {pelvis.shape}, {pelvis_gt.shape}"
+    assert torch.abs(pelvis - pelvis_gt).sum() < EPS, \
+        f"pelvis != pelvis_gt, but {torch.abs(pelvis - pelvis_gt).sum()}"
+    
+    jaw_ind = sk.constants.JOINTS_NAME.SMPLX.index('jaw')
+    jaw = joints[:, [jaw_ind], :]
+    jaw_gt = sk.utils.JointSelector.select_joint(joints, ['jaw'])
+    assert torch.abs(jaw - jaw_gt).sum() < EPS, f"jaw != jaw_gt, but {torch.abs(jaw - jaw_gt).sum()}"
+
+    print('[T5-6] Pass!\n')
+
+def test5_7():
+    """ Test utils """
+    from smplkit.utils import BodyModel
+
+    bm1 = BodyModel('smplx')
+    bm2 = BodyModel('smpl') # bm2 == bm1
+
+    assert bm1.model.name == 'SMPLX', f"bm1.model.name != 'smplx', but {bm1.model.name}"
+    assert bm2.model.name == 'SMPLX', f"bm2.model.name != 'smplx', but {bm2.model.name}"
+    
+    assert id(bm1) == id(bm2), \
+        f"id(bm1.model) != id(bm2.model), but {id(bm1.model)}, {id(bm2.model)}"
+    
+    ## reset model
+    bm1.reset('smplh')
+
+    assert bm1.model.name == 'SMPLH', f"bm1.model.name != 'smplh', but {bm1.model.name}"
+    assert bm2.model.name == 'SMPLH', f"bm2.model.name != 'smplh', but {bm2.model.name}"
+
+    assert id(bm1) == id(bm2), \
+        f"id(bm1.model) != id(bm2.model), but {id(bm1.model)}, {id(bm2.model)}"
+
+    print('[T5-7] Pass!\n')
+
